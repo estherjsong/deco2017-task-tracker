@@ -18,37 +18,42 @@ form.addEventListener("submit", function (event) {
 })
 
 function displayTask(task) {
-    let item = document.createElement("li");
-    item.setAttribute("data-id", task.id);
-    item.innerHTML = `<p><strong>${task.name}</strong><br>${task.type}</p>`;
 
-    tasklist.appendChild(item);
+    tasklist.innerHTML = "";
 
-    // Clear the value of the input once the task has been added to the page
-    form.reset();
+    let localTasks = JSON.parse(localStorage.getItem('tasks'));
 
-    // Setup delete button DOM elements
-    let delButton = document.createElement("button");
-    let delButtonText = document.createTextNode("Delete");
-    delButton.appendChild(delButtonText);
-    item.appendChild(delButton); // Adds a delete button to every task
+    if (localTasks !== null) {
+        localTasks.forEach(function (task) {
+            let item = document.createElement("li");
+            item.setAttribute("data-id", task.id);
+            item.innerHTML = `<p><strong>${task.name}</strong><br>${task.type}</p>`;
+            tasklist.appendChild(item);
 
-    // Listen for when the delete button is clicked
-    delButton.addEventListener("click", function (event) {
+            form.reset();
 
-        taskList.forEach(function (taskArrayElement, taskArrayIndex) {
-            if (taskArrayElement.id == item.getAttribute('data-id')) {
-                taskList.splice(taskArrayIndex, 1)
-            }
+            // Setup delete button DOM elements
+            let delButton = document.createElement("button");
+            let delButtonText = document.createTextNode("Delete");
+            delButton.appendChild(delButtonText);
+            item.appendChild(delButton); // Adds a delete button to every task
+
+            delButton.addEventListener("click", function (event) {
+
+                localTasks.forEach(function (taskArrayElement, taskArrayIndex) {
+                    if (taskArrayElement.id == item.getAttribute('data-id')) {
+                        localTasks.splice(taskArrayIndex, 1);
+                    }
+                })
+
+                localStorage.setItem('tasks', JSON.stringify(localTasks));
+
+                item.remove(); // Remove the task item from the page when button clicked
+                // Because we used 'let' to define the item, this will always delete the right element
+
+            })
         })
-
-        // Make sure the deletion worked by logging out the whole array
-        console.log(taskList)
-
-        item.remove(); // Remove the task item from the page when button clicked
-        // Because we used 'let' to define the item, this will always delete the right element
-
-    })
+    }
 
 
 }
@@ -75,7 +80,6 @@ function displayTask(task) {
 
 
 // Create an array called 'taskList'
-var taskList = [];
 
 // Create a function called 'addTask'
 // Give the function input parameters for: name, type, rate, time, client
@@ -108,7 +112,20 @@ function addTask(name, type, rate, time, client) {
         client
     }
 
-    taskList.push(task);
+    let localTasks = JSON.parse(localStorage.getItem('tasks'));
+
+    if (localTasks == null) {
+        localTasks = [task];
+    } else {
+        if (localTasks.find(element => element.name === task.name)) {
+            console.log('Task already exists');
+        } else {
+            localTasks.push(task);
+        }
+    }
+
+    localStorage.setItem('tasks', JSON.stringify(localTasks));
+
     displayTask(task);
 
 }
